@@ -3,24 +3,40 @@ package ru.clevertec.priorityQueue;
 import ru.clevertec.priorityQueue.api.Queue;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class PriorityQueue<E> implements Queue<E> {
     private static final int DEFAULT_INITIAL_CAPACITY = 8;
+
+    private final Comparator<? super E> comparator;
 
     private Object[] elements;
 
     private int size;
 
     public PriorityQueue() {
+        this(null);
+    }
+
+    public PriorityQueue(Comparator<? super E> comparator) {
         this.elements = new Object[DEFAULT_INITIAL_CAPACITY];
+        this.comparator = comparator;
         this.size = 0;
     }
+
 
     @Override
     public boolean add(E e) {
         if (e == null) {
             throw new NullPointerException();
         }
+
+        if (comparator == null) {
+            if (!(e instanceof Comparable)) {
+                throw new ClassCastException();
+            }
+        }
+
         if (elements.length == size) {
             grow();
         }
@@ -37,39 +53,49 @@ public class PriorityQueue<E> implements Queue<E> {
     }
 
     @Override
-    public E pool() {
+    public E poll() {
         E result = (E) elements[0];
 
         if (size > 0) {
             elements[0] = elements[size - 1];
             elements[size - 1] = null;
             size--;
-            siftDown();
+
+            if (comparator == null) {
+                siftDownComparable();
+            } else {
+                siftDownUsingComparator();
+            }
+
         }
         return result;
-    }
-
-    @Override
-    public int size() {
-        return this.size;
     }
 
     private void siftUp(E e) {
         int k = size;
 
+
         while (k > 0) {
             int parent = (k - 1) / 2;
             E p = (E) elements[parent];
-            if (((Comparable<? super E>) e).compareTo(p) > 0) {
-                break;
+
+            if (comparator == null) {
+                if (((Comparable<? super E>) e).compareTo(p) >= 0) {
+                    break;
+                }
+            } else {
+                if (comparator.compare(e, p) >= 0) {
+                    break;
+                }
             }
+
             elements[k] = p;
             k = parent;
         }
         elements[k] = e;
     }
 
-    public void siftDown() {
+    public void siftDownComparable() {
         int parent = 0;
         int halfSize = size / 2;
 
@@ -93,6 +119,31 @@ public class PriorityQueue<E> implements Queue<E> {
         }
     }
 
+    public void siftDownUsingComparator() {
+        int parent = 0;
+        int halfSize = size / 2;
+
+        while (parent < halfSize) {
+            int left = parent * 2 + 1;
+            int right = left + 1;
+
+            E p = (E) elements[parent];
+
+            if (right < size && (comparator.compare((E) elements[left], (E) elements[right]) > 0)) {
+                if (comparator.compare((E) p, (E) elements[right]) <= 0) {
+                    break;
+                }
+                swap(parent, right, elements);
+                parent = right;
+
+            } else {
+                swap(parent, left, elements);
+                parent = left;
+            }
+        }
+    }
+
+
     private void grow() {
         elements = Arrays.copyOf(elements, size + size / 2);
     }
@@ -104,9 +155,13 @@ public class PriorityQueue<E> implements Queue<E> {
     }
 
     @Override
+    public int size() {
+        return this.size;
+    }
+
+    //ToDo отображать только  по size
+    @Override
     public String toString() {
-        return "PriorityQueue{" +
-                "elements=" + Arrays.toString(elements) +
-                '}';
+        return Arrays.toString(elements);
     }
 }
