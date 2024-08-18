@@ -1,4 +1,4 @@
-package ru.clevertec.priorityQueue.api;
+package ru.clevertec.priority_queue.api;
 
 public interface Queue<E> {
     boolean add(E e);

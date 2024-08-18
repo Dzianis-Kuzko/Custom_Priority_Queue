@@ -1,7 +1,7 @@
-package ru.clevertec.priorityQueue;
+package ru.clevertec.priority_queue;
 
 import org.junit.jupiter.api.Test;
-import ru.clevertec.priorityQueue.api.Queue;
+import ru.clevertec.priority_queue.api.Queue;
 
 import java.util.Comparator;
 

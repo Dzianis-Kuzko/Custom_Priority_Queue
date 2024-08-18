@@ -1,6 +1,6 @@
-package ru.clevertec.priorityQueue;
+package ru.clevertec.priority_queue;
 
-import ru.clevertec.priorityQueue.api.Queue;
+import ru.clevertec.priority_queue.api.Queue;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -31,10 +31,8 @@ public class PriorityQueue<E> implements Queue<E> {
             throw new NullPointerException();
         }
 
-        if (comparator == null) {
-            if (!(e instanceof Comparable)) {
-                throw new ClassCastException();
-            }
+        if (comparator == null && !(e instanceof Comparable)) {
+            throw new ClassCastException();
         }
 
         if (elements.length == size) {
@@ -74,19 +72,20 @@ public class PriorityQueue<E> implements Queue<E> {
     private void siftUp(E e) {
         int k = size;
 
-
         while (k > 0) {
             int parent = (k - 1) / 2;
             E p = (E) elements[parent];
 
+            int comparisonResult;
+
             if (comparator == null) {
-                if (((Comparable<? super E>) e).compareTo(p) >= 0) {
-                    break;
-                }
+                comparisonResult = ((Comparable<? super E>) e).compareTo(p);
             } else {
-                if (comparator.compare(e, p) >= 0) {
-                    break;
-                }
+                comparisonResult = comparator.compare(e, p);
+            }
+
+            if (comparisonResult >= 0) {
+                break;
             }
 
             elements[k] = p;
@@ -130,7 +129,7 @@ public class PriorityQueue<E> implements Queue<E> {
             E p = (E) elements[parent];
 
             if (right < size && (comparator.compare((E) elements[left], (E) elements[right]) > 0)) {
-                if (comparator.compare((E) p, (E) elements[right]) <= 0) {
+                if (comparator.compare(p, (E) elements[right]) <= 0) {
                     break;
                 }
                 swap(parent, right, elements);
@@ -159,9 +158,18 @@ public class PriorityQueue<E> implements Queue<E> {
         return this.size;
     }
 
-    //ToDo отображать только  по size
     @Override
     public String toString() {
-        return Arrays.toString(elements);
+        StringBuilder sb = new StringBuilder("[");
+
+        for (int i = 0; i < size; i++) {
+            sb.append(elements[i]);
+            if (i < size - 1) {
+                sb.append(", ");
+            }
+        }
+
+        sb.append("]");
+        return sb.toString();
     }
 }
